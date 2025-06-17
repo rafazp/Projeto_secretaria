@@ -1,0 +1,15 @@
+<h2>Agenda Escolar</h2>
+<ul>
+    {% for evento in eventos %}
+        <li>
+            <strong>{{ evento.data|date:"d/m/Y" }}</strong> - 
+            <span>{{ evento.get_tipo_display }}:</span>
+            <span>{{ evento.titulo }}</span>
+            {% if evento.descricao %}
+                <br><small>{{ evento.descricao }}</small>
+            {% endif %}
+        </li>
+    {% empty %}
+        <li>Nenhum evento cadastrado.</li>
+    {% endfor %}
+</ul>

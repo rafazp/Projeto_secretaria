@@ -1,0 +1,9 @@
+<h2>Média de {{ aluno.name_aluno }} em {{ disciplina }}</h2>
+{% if media %}
+    <p>Média: <strong>{{ media|floatformat:1 }}</strong></p>
+    {% if media < 6 %}
+        <p style="color:red;">Abaixo da média!</p>
+    {% endif %}
+{% else %}
+    <p>Sem notas cadastradas para esta disciplina.</p>
+{% endif %}
