@@ -1,6 +1,7 @@
 from django.db import models
 import datetime
 from .validators import validar_cpf, validar_telefone
+from django.contrib.auth.models import User
 
 # O models.py define as estruturas de dados de todas as ferramentas implementadas, utilizando os modelos do Django. Cada classe representa uma ferramenta/implementação diferente.
 # Inclui uma "classe Meta" em todos os models, principalmente para corrigir o nome que aparece no painel de administração do Django e também para uma melhor organização.
@@ -8,6 +9,8 @@ from .validators import validar_cpf, validar_telefone
 
 #Representa o responsável legal de um aluno.
 class Responsavel(models.Model):
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=50, verbose_name="Digite o nome do responsavel")
     phone_number = models.CharField(max_length=11, verbose_name="Digite o numero do celular(xx)xxxxx-xxxx", validators=[validar_telefone])
     email = models.EmailField(max_length=100, verbose_name="Digite o email do responsavel")
@@ -25,7 +28,8 @@ class Responsavel(models.Model):
 
 # Representa os professores da escola.   
 class Professor(models.Model):
-
+    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name_professor = models.CharField(max_length=50, verbose_name="Digite o nome do professor", blank=False)
     phone_number_professor = models.CharField(max_length=11, verbose_name="Digite o numero do celular(xx)xxxxx-xxxx", validators=[validar_telefone])
     email_professor = models.EmailField(max_length=100, verbose_name="Digite o email do professor")
@@ -70,7 +74,7 @@ class Aluno(models.Model):
     ("12", "Dezembro"),
     )
 
-
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name_aluno = models.CharField(max_length=50, verbose_name="Digite o nome do Aluno")
     phone_number_aluno = models.CharField(max_length=11, verbose_name="Digite o numero do celular(xx)xxxxx-xxxx", validators=[validar_telefone])
     email_aluno = models.EmailField(max_length=100, verbose_name="Digite o email do aluno")
@@ -125,7 +129,7 @@ class Nota(models.Model):
 
     DISCIPLINA_CHOICES = (
     ('LING',"Linguagens"),
-    ('CN',"Ciências Humanas"),
+    ('CH',"Ciências Humanas"),
     ('CN',"Ciências da Natureza"),
     ('MAT',"Matemática"),
     ('DS',"Habilitação técnica"),
@@ -276,3 +280,35 @@ class EventoCalendario(models.Model):
     class Meta:
         verbose_name = "Evento do calendário"
         verbose_name_plural = "Eventos do calendário"
+
+class Livro(models.Model):
+    titulo = models.CharField(max_length=255)
+    autor = models.CharField(max_length=100)
+    data_publicacao = models.DateField()
+
+    def __str__(self):
+        return self.titulo
+    
+class EmprestimoLivro(models.Model):
+    TIPO_CHOICES = (
+        ('livro', 'Livro'),
+        ('computador', 'Computador'),
+    )
+    aluno = models.ForeignKey('Aluno', on_delete=models.CASCADE)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='livro')
+    livro = models.ForeignKey('Livro', on_delete=models.CASCADE, blank=True, null=True)
+    computador = models.CharField(max_length=100, blank=True, null=True, help_text="Identificação do computador")
+    data_emprestimo = models.DateField(auto_now_add=True)
+    data_devolucao = models.DateField(blank=True, null=True)
+    devolvido = models.BooleanField(default=False)
+
+    def __str__(self):
+        if self.tipo == 'livro' and self.livro:
+            return f"Livro: {self.livro.titulo} - {self.aluno.name_aluno} - {'Devolvido' if self.devolvido else 'Em posse'}"
+        elif self.tipo == 'computador' and self.computador:
+            return f"Computador: {self.computador} - {self.aluno.name_aluno} - {'Devolvido' if self.devolvido else 'Em posse'}"
+        return f"{self.aluno.name_aluno} - {self.tipo}"
+    
+    class Meta:
+        verbose_name = "Empréstimo de Livro ou Computador"
+        verbose_name_plural = "Empréstimos de Livros ou Computadores"

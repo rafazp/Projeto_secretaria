@@ -1,11 +1,12 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from api.models import Responsavel, Aluno, Professor, Bimestre, Nota, AtividadePendente, EventoExtracurricular, PagamentoPendente, Advertencia, Suspensao, EventoCalendario 
+from api.models import Responsavel, Aluno, Professor, Bimestre, Nota, AtividadePendente, EventoExtracurricular, PagamentoPendente, Advertencia, Suspensao, EventoCalendario, EmprestimoLivro, Livro 
 from django.contrib.auth.models import Group, User
 from django.apps import apps
 
 # O admin.py define como os dados serão exibidos no painel de administração do Django (a parte visual). Também é onde você pode personalizar a exibição de varios elementos para melhorar a interface do usuário.
 
+@admin.register(Responsavel)
 class ResponsaveisAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_name', 'get_phone_number', 'get_email', 'get_adress', 'get_cpf', 'get_birthday')
     list_display_links = ('get_name',)
@@ -38,7 +39,7 @@ class ResponsaveisAdmin(admin.ModelAdmin):
         return obj.birthday
     get_birthday.short_description = 'Data de Nascimento'
 
-
+@admin.register(Aluno)
 class AlunosAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_turma', 'get_nome', 'get_celular', 'get_email', 'get_cpf', 'birthday_aluno', 'faltas_aluno')
     list_display_links = ('get_nome',)
@@ -67,7 +68,7 @@ class AlunosAdmin(admin.ModelAdmin):
         return obj.cpf_aluno
     get_cpf.short_description = 'CPF do Aluno'
 
-
+@admin.register(Professor)
 class ProfessorAdmin(admin.ModelAdmin):
     list_display = ('id', 'get_name', 'get_phone', 'get_email','get_cpf', 'get_birthday', 'get_matricula')
     list_display_links = ('get_name',)
@@ -100,11 +101,22 @@ class ProfessorAdmin(admin.ModelAdmin):
         return obj.matricula_professor
     get_matricula.short_description = 'Matrícula'
 
-
+@admin.register(Bimestre)
 class BimestreAdmin(admin.ModelAdmin):
     list_display = ('id', 'numero')
     list_filter = ('numero',)
 
+@admin.register(EmprestimoLivro)
+class EmprestimoMaterialAdmin(admin.ModelAdmin):
+    list_display = ('id', 'tipo', 'livro', 'computador', 'aluno', 'data_emprestimo', 'devolvido', 'data_devolucao')
+    list_filter = ('tipo', 'devolvido', 'data_emprestimo', 'livro', 'aluno')
+    search_fields = ('livro__titulo', 'computador', 'aluno__complete_name_aluno')
+
+@admin.register(Livro)
+class LivroAdmin(admin.ModelAdmin):
+    list_display = ('id', 'titulo', 'autor', 'data_publicacao')
+    search_fields = ('titulo', 'autor')
+    list_filter = ('data_publicacao', 'autor')
 
 @admin.register(Nota)
 class NotaAdmin(admin.ModelAdmin):
@@ -167,11 +179,6 @@ class EventoCalendarioAdmin(admin.ModelAdmin):
     list_filter = ('tipo', 'data')
     search_fields = ('titulo', 'descricao')
 
-admin.site.register(Responsavel, ResponsaveisAdmin)
-admin.site.register(Aluno, AlunosAdmin)
-admin.site.register(Professor, ProfessorAdmin)
-admin.site.register(Bimestre, BimestreAdmin)
-
 
 # Personalizei os nomes exibidos no admin com verbose_name e verbose_name_plural para tornar a interface mais compreensível 
 
@@ -179,7 +186,7 @@ apps.get_app_config('auth').verbose_name = 'Controle de Usuários'
 admin.site.site_header = "Minha Escola"
 admin.site.site_title = "Painel Administrativo"
 admin.site.index_title = "Administração do Sistema"
-Group._meta.verbose_name = "Perfil de Acesso"
-Group._meta.verbose_name_plural = "Perfis de Acesso"
-User._meta.verbose_name = "Usuário Cadastrado"
-User._meta.verbose_name_plural = "Usuários Cadastrados"
+Group._meta.verbose_name = "Grupo"
+Group._meta.verbose_name_plural = "Grupos"
+User._meta.verbose_name = "Usuário"
+User._meta.verbose_name_plural = "Usuários"
